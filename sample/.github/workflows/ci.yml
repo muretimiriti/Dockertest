@@ -1,0 +1,59 @@
+# .github/workflows/ci.yml
+name: DevOps Sample CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sampledb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sampledb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: npm install
+
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm install
+
+    - name: Run backend tests
+      working-directory: ./backend
+      run: |
+        # optional: add your tests here
+        echo "No backend tests defined yet"
+
+    - name: Run frontend tests
+      working-directory: ./frontend
+      run: |
+        npm run lint
+        # optional: add more frontend tests here
+
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
